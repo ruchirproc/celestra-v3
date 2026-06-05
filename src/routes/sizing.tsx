@@ -36,12 +36,12 @@ function SizingPage() {
   const source = sourceId ? getById(sourceId) : undefined;
 
   const [workingDays, setWorkingDays] = useState(220);
-  const [callsPerDay, setCallsPerDay] = useState(8);
+  const [callsPerDay, setCallsPerDay] = useState(2);
   const [tiers, setTiers] = useState([
-    { tier: "1", hcps: 1200, freq: 24 },
-    { tier: "2", hcps: 3400, freq: 12 },
-    { tier: "3", hcps: 5800, freq: 6 },
-    { tier: "Monitor", hcps: 4200, freq: 2 },
+    { tier: "1", hcps: 1200, freq: 12 },
+    { tier: "2", hcps: 3400, freq: 9 },
+    { tier: "3", hcps: 5800, freq: 0 },
+    { tier: "Monitor", hcps: 4200, freq: 0 },
   ]);
   const [active, setActive] = useState<Scenario>("normal");
 
