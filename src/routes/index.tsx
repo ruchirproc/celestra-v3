@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { DataSourcePanel } from "@/components/DataSourcePanel";
-import { sendPrompt } from "@/lib/send-prompt";
 import { makeSyntheticWorkbook, useWorkbooks } from "@/lib/workbook-store";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +21,7 @@ export const Route = createFileRoute("/")({
 
 type Role = "Prescriber" | "Influencer" | "Decision Maker";
 type Metric = { id: string; name: string; role: Role; weight: number };
+type Tier = { tier: string; decileMin: number; decileMax: number; color: string; label: string };
 
 const OBJECTIVE = "Non-Rare disease market";
 const MODULE_ID = "targeting";
@@ -40,10 +40,10 @@ const DEFAULT_METRICS: Metric[] = [
   { id: "gen_noncomm_trx", name: "Generic NonCommercial TRx", role: "Influencer", weight: 6 },
 ];
 
-const TIERS = [
-  { tier: "1", decile: "D8–10", color: "bg-foreground text-background", label: "High frequency" },
-  { tier: "2", decile: "D4–7", color: "bg-foreground/70 text-background", label: "Standard Call frequency" },
-  { tier: "3", decile: "D1–3", color: "bg-muted-foreground/40 text-foreground", label: "Low Frequency" },
+const DEFAULT_TIERS: Tier[] = [
+  { tier: "1", decileMin: 8, decileMax: 10, color: "bg-foreground text-background", label: "High frequency" },
+  { tier: "2", decileMin: 4, decileMax: 7, color: "bg-foreground/70 text-background", label: "Standard Call frequency" },
+  { tier: "3", decileMin: 1, decileMax: 3, color: "bg-muted-foreground/40 text-foreground", label: "Low Frequency" },
 ];
 
 function TargetingPage() {
@@ -52,43 +52,36 @@ function TargetingPage() {
   const source = sourceId ? getById(sourceId) : undefined;
 
   const [metrics, setMetrics] = useState(DEFAULT_METRICS);
+  const [tiers, setTiers] = useState(DEFAULT_TIERS);
   const total = useMemo(() => metrics.reduce((s, m) => s + m.weight, 0), [metrics]);
   const valid = total === 100;
 
   const updateWeight = (id: string, v: number) =>
     setMetrics((m) => m.map((x) => (x.id === id ? { ...x, weight: v } : x)));
 
+  const updateTierDecile = (tier: string, field: "decileMin" | "decileMax", v: number) =>
+    setTiers((ts) =>
+      ts.map((t) => (t.tier === tier ? { ...t, [field]: Math.min(10, Math.max(1, v)) } : t))
+    );
+
   const handleExport = () => {
     if (!valid) return;
-    sendPrompt({
-      skill: "targeting-branded-skill",
-      prompt: `Generate HCP target list for: ${OBJECTIVE} from ${source?.name}. Weights: ${metrics
-        .map((m) => `${m.name}=${m.weight}%`)
-        .join(", ")}.`,
-      artifact: "HCP_Targeting_Workbook.xlsx (7 sheets)",
-    });
+    const a = document.createElement("a");
+    a.href = "/Zoryve_HCP_Target_List_v5_Updated.xlsx";
+    a.download = "Zoryve_HCP_Target_List_v5_Updated.xlsx";
+    a.click();
     add(
       makeSyntheticWorkbook({
-        name: "HCP_Targeting_Workbook.xlsx",
+        name: "Zoryve_HCP_Target_List_v5_Updated.xlsx",
         module: MODULE_ID,
         sheets: [
-          {
-            name: "Summary",
-            rows: [
-              ["Objective", OBJECTIVE],
-              ["Source", source?.name ?? ""],
-              ["Total HCPs", 14600],
-              ["Weights Σ%", total],
-            ],
-          },
-          {
-            name: "Weights",
-            rows: [["Metric", "Role", "Weight %"], ...metrics.map((m) => [m.name, m.role, m.weight])],
-          },
-          {
-            name: "Tier roster",
-            rows: [["Tier", "Decile", "Label"], ...TIERS.map((t) => [t.tier, t.decile, t.label])],
-          },
+          { name: "Summary", rows: [["Objective", OBJECTIVE], ["Source", source?.name ?? ""], ["Total HCPs", 14600]] },
+          { name: "Raw data", rows: [] },
+          { name: "Metric mapping", rows: [["Metric", "Role", "Weight %"], ...metrics.map((m) => [m.name, m.role, m.weight])] },
+          { name: "Normalization helper", rows: [] },
+          { name: "Scoring calculator", rows: [] },
+          { name: "Final target list", rows: [["Tier", "Decile Min", "Decile Max", "Label"], ...tiers.map((t) => [t.tier, t.decileMin, t.decileMax, t.label])] },
+          { name: "Final summary dashboard", rows: [] },
         ],
       })
     );
@@ -176,7 +169,7 @@ function TargetingPage() {
                   Composite score → decile → tier assignment.
                 </p>
                 <div className="mt-4 space-y-2">
-                  {TIERS.map((t) => (
+                  {tiers.map((t) => (
                     <div
                       key={t.tier}
                       className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2.5"
@@ -190,7 +183,26 @@ function TargetingPage() {
                         >
                           {t.tier}
                         </span>
-                        <span className="font-mono text-xs text-muted-foreground">{t.decile}</span>
+                        <div className="flex items-center gap-1 font-mono text-xs text-muted-foreground">
+                          <span>D</span>
+                          <input
+                            type="number"
+                            min={1}
+                            max={t.decileMax}
+                            value={t.decileMin}
+                            onChange={(e) => updateTierDecile(t.tier, "decileMin", +e.target.value)}
+                            className="w-12 rounded border border-border bg-muted/40 px-1 py-0.5 text-center font-mono text-xs tabular-nums focus:outline-none focus:ring-1 focus:ring-ring"
+                          />
+                          <span>–</span>
+                          <input
+                            type="number"
+                            min={t.decileMin}
+                            max={10}
+                            value={t.decileMax}
+                            onChange={(e) => updateTierDecile(t.tier, "decileMax", +e.target.value)}
+                            className="w-12 rounded border border-border bg-muted/40 px-1 py-0.5 text-center font-mono text-xs tabular-nums focus:outline-none focus:ring-1 focus:ring-ring"
+                          />
+                        </div>
                       </div>
                       <span className="text-xs text-muted-foreground">{t.label}</span>
                     </div>
