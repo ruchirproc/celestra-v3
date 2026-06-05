@@ -80,7 +80,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="flex min-h-screen w-full bg-background">
+    <div className="flex h-screen w-full overflow-hidden bg-background">
       {/* Mobile top bar */}
       <header className="fixed inset-x-0 top-0 z-40 flex items-center justify-between border-b border-border bg-sidebar px-4 py-3 text-sidebar-foreground lg:hidden">
         <div className="flex items-center gap-2.5">
@@ -145,29 +145,29 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Main content column */}
       <div className="flex flex-1 min-w-0 flex-col">
         {/* Desktop top header bar */}
-        <header className="hidden lg:flex items-center justify-between bg-primary px-6 py-3.5 border-b border-white/10 text-white">
+        <header className="hidden lg:flex items-center justify-between bg-white px-6 py-3.5 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <CelestraLogo className="h-8 w-8 shrink-0" />
             <div className="flex items-baseline gap-3">
-              <span className="text-base font-bold tracking-widest">CELESTRA</span>
-              <span className="text-white/30 select-none">|</span>
-              <span className="text-sm text-white/70 font-light">
+              <span className="text-base font-bold tracking-widest text-[oklch(0.32_0.18_265)]">CELESTRA</span>
+              <span className="text-gray-300 select-none">|</span>
+              <span className="text-sm text-gray-500 font-light">
                 The intelligence layer for pharma commercial
               </span>
             </div>
           </div>
-          <div className="text-[11px] font-mono text-white/45 tracking-wider">
+          <div className="text-[11px] font-mono text-gray-400 tracking-wider">
             V1.0 · procDNA Analytics
           </div>
         </header>
 
         {/* Status bar */}
-        <div className="hidden lg:flex items-center justify-between bg-[oklch(0.27_0.16_265)] px-6 py-1.5 text-[11px] font-mono text-white/60 tracking-wider">
+        <div className="hidden lg:flex items-center justify-between bg-slate-50 px-6 py-1.5 text-[11px] font-mono text-gray-400 tracking-wider border-b border-gray-100">
           <span>ANALYTICS PLATFORM · All Modules Active</span>
           <span>AUTO-REFRESH ON LOAD</span>
         </div>
 
-        <main className="flex-1 min-w-0 pt-14 lg:pt-0">{children}</main>
+        <main className="flex-1 min-w-0 overflow-y-auto pt-14 lg:pt-0">{children}</main>
       </div>
     </div>
   );
