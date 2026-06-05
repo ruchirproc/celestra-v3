@@ -9,19 +9,19 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TargetingRouteImport } from './routes/targeting'
 import { Route as SizingRouteImport } from './routes/sizing'
+import { Route as LibraryRouteImport } from './routes/library'
 import { Route as AlignmentRouteImport } from './routes/alignment'
 import { Route as IndexRouteImport } from './routes/index'
 
-const TargetingRoute = TargetingRouteImport.update({
-  id: '/targeting',
-  path: '/targeting',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SizingRoute = SizingRouteImport.update({
   id: '/sizing',
   path: '/sizing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LibraryRoute = LibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AlignmentRoute = AlignmentRouteImport.update({
@@ -38,51 +38,51 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alignment': typeof AlignmentRoute
+  '/library': typeof LibraryRoute
   '/sizing': typeof SizingRoute
-  '/targeting': typeof TargetingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alignment': typeof AlignmentRoute
+  '/library': typeof LibraryRoute
   '/sizing': typeof SizingRoute
-  '/targeting': typeof TargetingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/alignment': typeof AlignmentRoute
+  '/library': typeof LibraryRoute
   '/sizing': typeof SizingRoute
-  '/targeting': typeof TargetingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/alignment' | '/sizing' | '/targeting'
+  fullPaths: '/' | '/alignment' | '/library' | '/sizing'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/alignment' | '/sizing' | '/targeting'
-  id: '__root__' | '/' | '/alignment' | '/sizing' | '/targeting'
+  to: '/' | '/alignment' | '/library' | '/sizing'
+  id: '__root__' | '/' | '/alignment' | '/library' | '/sizing'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlignmentRoute: typeof AlignmentRoute
+  LibraryRoute: typeof LibraryRoute
   SizingRoute: typeof SizingRoute
-  TargetingRoute: typeof TargetingRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/targeting': {
-      id: '/targeting'
-      path: '/targeting'
-      fullPath: '/targeting'
-      preLoaderRoute: typeof TargetingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/sizing': {
       id: '/sizing'
       path: '/sizing'
       fullPath: '/sizing'
       preLoaderRoute: typeof SizingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/library': {
+      id: '/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof LibraryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/alignment': {
@@ -105,8 +105,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlignmentRoute: AlignmentRoute,
+  LibraryRoute: LibraryRoute,
   SizingRoute: SizingRoute,
-  TargetingRoute: TargetingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -15,6 +15,5 @@ export async function sendPrompt(opts: {
   toast.success(`Dispatched to ${opts.skill}`, {
     description: opts.artifact ? `Generating: ${opts.artifact}` : opts.prompt.slice(0, 120),
   });
-  await new Promise<void>((r) => setTimeout(r, 1000));
   return { ok: true as const };
 }
