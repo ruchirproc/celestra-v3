@@ -12,8 +12,8 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
-  // Force-enable the Nitro deploy plugin when running outside Lovable's sandbox (e.g. Vercel CI).
-  // Without this the plugin is skipped and Nitro never packages to .vercel/output/.
-  // NITRO_PRESET=vercel (set in vercel.json buildCommand) controls which target is used.
-  nitro: true,
+  // Force-enable the Nitro deploy plugin and set preset to vercel so output goes to .vercel/output/.
+  // The Lovable config ignores NITRO_PRESET env var and defaults to cloudflare-module;
+  // passing the object form overrides it directly.
+  nitro: { preset: "vercel" },
 });
