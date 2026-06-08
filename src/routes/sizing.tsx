@@ -107,20 +107,19 @@ function SizingPage() {
         eyebrow="Module 02 · sizing-skill"
         title="Field Force Sizing"
         description="Upload HCP plan → bottom-up workload model → scenario comparison with sensitivity tornado."
-        actions={
-          source ? (
-            <Button size="sm" onClick={handleExport}>
-              <Download className="mr-2 h-4 w-4" />
-              Export formula workbook
-            </Button>
-          ) : null
-        }
       />
 
       <div className="space-y-6 p-4 sm:p-6 lg:p-8">
         <DataSourcePanel module={MODULE_ID} label="Call-plan / HCP universe data" />
 
         {source && (
+          <>
+            <div className="flex justify-end">
+              <Button size="sm" onClick={handleExport}>
+                <Download className="mr-2 h-4 w-4" />
+                Export formula workbook
+              </Button>
+            </div>
           <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
             <section className="space-y-4">
               <div className="rounded-lg border border-border bg-card p-4 sm:p-5">
@@ -260,6 +259,7 @@ function SizingPage() {
               </div>
             </section>
           </div>
+          </>
         )}
       </div>
     </>

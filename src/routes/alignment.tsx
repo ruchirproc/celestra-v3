@@ -190,9 +190,14 @@ function AlignmentPage() {
         eyebrow="Module 03 · zip-based-alignment"
         title="Territory Alignment"
         description="Upload ZIP roster → contiguous territories with workload balancing → validation gates."
-        actions={
-          source ? (
-            <div className="flex flex-wrap gap-2">
+      />
+
+      <div className="space-y-6 p-4 sm:p-6 lg:p-8">
+        <DataSourcePanel module={MODULE_ID} label="ZIP / territory roster" />
+
+        {source && (
+          <>
+            <div className="flex flex-wrap justify-end gap-2">
               <Button variant="outline" size="sm" onClick={handleMap}>
                 <MapIcon className="mr-2 h-4 w-4" />
                 Generate political map
@@ -202,15 +207,6 @@ function AlignmentPage() {
                 Export 2-sheet workbook
               </Button>
             </div>
-          ) : null
-        }
-      />
-
-      <div className="space-y-6 p-4 sm:p-6 lg:p-8">
-        <DataSourcePanel module={MODULE_ID} label="ZIP / territory roster" />
-
-        {source && (
-          <>
             <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
               <section className="rounded-lg border border-border bg-card p-5">
                 <div className="flex items-center justify-between gap-3">

@@ -69,9 +69,7 @@ export function SheetPreviewTable({ sheets }: { sheets: SheetPreview[] }) {
           </tbody>
         </table>
       </div>
-      <div className="border-t border-border bg-muted/20 px-3 py-1.5 text-[10px] font-mono text-muted-foreground">
-        Showing first {Math.min(body.length, 25)} of {Math.max(sheet.rows.length - 1, 0)} rows · {header.length} cols
-      </div>
+
     </div>
   );
 }

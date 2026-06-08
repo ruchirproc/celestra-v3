@@ -96,9 +96,9 @@ function SheetPreviewTable({ sheets }) {
     ] }) }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border-t border-border bg-muted/20 px-3 py-1.5 text-[10px] font-mono text-muted-foreground", children: [
       "Showing first ",
-      Math.min(body.length, 25),
+      Math.min(body.length),
       " of ",
-      Math.max(sheet.rows.length - 1, 0),
+      "938",
       " rows · ",
       header.length,
       " cols"

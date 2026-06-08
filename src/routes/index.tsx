@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Download, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Download, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -53,6 +53,7 @@ function TargetingPage() {
 
   const [metrics, setMetrics] = useState(DEFAULT_METRICS);
   const [tiers, setTiers] = useState(DEFAULT_TIERS);
+  const [exporting, setExporting] = useState(false);
   const total = useMemo(() => metrics.reduce((s, m) => s + m.weight, 0), [metrics]);
   const valid = total === 100;
 
@@ -65,26 +66,30 @@ function TargetingPage() {
     );
 
   const handleExport = () => {
-    if (!valid) return;
-    const a = document.createElement("a");
-    a.href = "/Zoryve_HCP_Target_List_v5_Updated.xlsx";
-    a.download = "Zoryve_HCP_Target_List_v5_Updated.xlsx";
-    a.click();
-    add(
-      makeSyntheticWorkbook({
-        name: "Zoryve_HCP_Target_List_v5_Updated.xlsx",
-        module: MODULE_ID,
-        sheets: [
-          { name: "Summary", rows: [["Objective", OBJECTIVE], ["Source", source?.name ?? ""], ["Total HCPs", 14600]] },
-          { name: "Raw data", rows: [] },
-          { name: "Metric mapping", rows: [["Metric", "Role", "Weight %"], ...metrics.map((m) => [m.name, m.role, m.weight])] },
-          { name: "Normalization helper", rows: [] },
-          { name: "Scoring calculator", rows: [] },
-          { name: "Final target list", rows: [["Tier", "Decile Min", "Decile Max", "Label"], ...tiers.map((t) => [t.tier, t.decileMin, t.decileMax, t.label])] },
-          { name: "Final summary dashboard", rows: [] },
-        ],
-      })
-    );
+    if (!valid || exporting) return;
+    setExporting(true);
+    setTimeout(() => {
+      const a = document.createElement("a");
+      a.href = "/Zoryve_HCP_Target_List_v5_Updated.xlsx";
+      a.download = "Zoryve_HCP_Target_List_v5_Updated.xlsx";
+      a.click();
+      add(
+        makeSyntheticWorkbook({
+          name: "Zoryve_HCP_Target_List_v5_Updated.xlsx",
+          module: MODULE_ID,
+          sheets: [
+            { name: "Summary", rows: [["Objective", OBJECTIVE], ["Source", source?.name ?? ""], ["Total HCPs", 14600]] },
+            { name: "Raw data", rows: [] },
+            { name: "Metric mapping", rows: [["Metric", "Role", "Weight %"], ...metrics.map((m) => [m.name, m.role, m.weight])] },
+            { name: "Normalization helper", rows: [] },
+            { name: "Scoring calculator", rows: [] },
+            { name: "Final target list", rows: [["Tier", "Decile Min", "Decile Max", "Label"], ...tiers.map((t) => [t.tier, t.decileMin, t.decileMax, t.label])] },
+            { name: "Final summary dashboard", rows: [] },
+          ],
+        })
+      );
+      setExporting(false);
+    }, 10000);
   };
 
   return (
@@ -93,20 +98,28 @@ function TargetingPage() {
         eyebrow="Module 01 · targeting-branded-skill"
         title="HCP Targeting"
         description="Upload HCP universe → weight metrics to 100% → export decile-bucketed target list."
-        actions={
-          source ? (
-            <Button onClick={handleExport} disabled={!valid} size="sm">
-              <Download className="mr-2 h-4 w-4" />
-              Export 7-sheet workbook
-            </Button>
-          ) : null
-        }
       />
 
       <div className="space-y-6 p-4 sm:p-6 lg:p-8">
         <DataSourcePanel module={MODULE_ID} label="HCP universe data" />
 
         {source && (
+          <>
+            <div className="flex justify-end">
+              <Button onClick={handleExport} disabled={!valid || exporting} size="sm">
+                {exporting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Claude is running the skill…
+                  </>
+                ) : (
+                  <>
+                    <Download className="mr-2 h-4 w-4" />
+                    Export 7-sheet workbook
+                  </>
+                )}
+              </Button>
+            </div>
           <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
             <div className="space-y-6">
               <section className="rounded-lg border border-border bg-card p-4 sm:p-5">
@@ -226,6 +239,7 @@ function TargetingPage() {
               </div>
             </aside>
           </div>
+          </>
         )}
       </div>
     </>
