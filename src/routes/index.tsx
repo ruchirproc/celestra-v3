@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "HCP Targeting · procDNA" },
+      { title: "Celestra" },
       { name: "description", content: "Build weighted HCP target lists with tier decile distribution." },
     ],
   }),
