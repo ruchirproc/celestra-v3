@@ -7,7 +7,6 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { DataSourcePanel } from "@/components/DataSourcePanel";
 import { makeSyntheticWorkbook, useWorkbooks } from "@/lib/workbook-store";
-import { sendPrompt, triggerDownload } from "@/lib/send-prompt";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -55,8 +54,10 @@ function TargetingPage() {
   const [metrics, setMetrics] = useState(DEFAULT_METRICS);
   const [tiers, setTiers] = useState(DEFAULT_TIERS);
   const [exporting, setExporting] = useState(false);
+  const [done, setDone] = useState(false);
   const total = useMemo(() => metrics.reduce((s, m) => s + m.weight, 0), [metrics]);
   const valid = total === 100;
+  const OUTPUT_FILENAME = "Zoryve_HCP_Target_List_v5_Updated.xlsx";
 
   const updateWeight = (id: string, v: number) =>
     setMetrics((m) => m.map((x) => (x.id === id ? { ...x, weight: v } : x)));
@@ -69,34 +70,31 @@ function TargetingPage() {
   const handleExport = async () => {
     if (!valid || exporting || !source) return;
     setExporting(true);
-    try {
-      const result = await sendPrompt({
-        skill: "targeting-branded-skill",
-        prompt: `Score HCPs using weighted metrics. Objective: ${OBJECTIVE}`,
-        artifact: "HCP_Target_List.xlsx",
-        sheetData: source.sheets,
-        params: { metrics, tiers, objective: OBJECTIVE },
-      });
-      if (!result.ok) return;
-      triggerDownload(result.blob, result.filename);
-      add(
-        makeSyntheticWorkbook({
-          name: result.filename,
-          module: MODULE_ID,
-          sheets: [
-            { name: "Summary", rows: [["Objective", OBJECTIVE], ["Source", source.name]] },
-            { name: "Raw data", rows: [] },
-            { name: "Metric mapping", rows: [["Metric", "Role", "Weight %"], ...metrics.map((m) => [m.name, m.role, m.weight])] },
-            { name: "Normalization helper", rows: [] },
-            { name: "Scoring calculator", rows: [] },
-            { name: "Final target list", rows: [["Tier", "Decile Min", "Decile Max", "Label"], ...tiers.map((t) => [t.tier, t.decileMin, t.decileMax, t.label])] },
-            { name: "Final summary dashboard", rows: [] },
-          ],
-        })
-      );
-    } finally {
-      setExporting(false);
-    }
+    setDone(false);
+    await new Promise<void>((resolve) => setTimeout(resolve, 5000));
+    const a = document.createElement("a");
+    a.href = `/${OUTPUT_FILENAME}`;
+    a.download = OUTPUT_FILENAME;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    add(
+      makeSyntheticWorkbook({
+        name: OUTPUT_FILENAME,
+        module: MODULE_ID,
+        sheets: [
+          { name: "Summary", rows: [] },
+          { name: "Raw data", rows: [] },
+          { name: "Metric mapping", rows: [["Metric", "Role", "Weight %"], ...metrics.map((m) => [m.name, m.role, m.weight])] },
+          { name: "Normalization helper", rows: [] },
+          { name: "Scoring calculator", rows: [] },
+          { name: "Final target list", rows: [] },
+          { name: "Final summary dashboard", rows: [] },
+        ],
+      })
+    );
+    setExporting(false);
+    setDone(true);
   };
 
   return (
@@ -112,12 +110,33 @@ function TargetingPage() {
 
         {source && (
           <>
-            <div className="flex justify-end">
+            <div className="flex items-center justify-end gap-3">
+              {done && (
+                <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-1.5 dark:border-green-800 dark:bg-green-950/20">
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600" />
+                  <span className="text-xs font-medium text-green-800 dark:text-green-200">
+                    {OUTPUT_FILENAME}
+                  </span>
+                  <button
+                    onClick={() => {
+                      const a = document.createElement("a");
+                      a.href = `/${OUTPUT_FILENAME}`;
+                      a.download = OUTPUT_FILENAME;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                    }}
+                    className="ml-1 text-xs text-green-600 underline underline-offset-2 hover:text-green-800"
+                  >
+                    Re-download
+                  </button>
+                </div>
+              )}
               <Button onClick={handleExport} disabled={!valid || exporting} size="sm">
                 {exporting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Claude is running the skill…
+                    Running targeting skill…
                   </>
                 ) : (
                   <>

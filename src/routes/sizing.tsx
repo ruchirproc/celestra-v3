@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DataSourcePanel } from "@/components/DataSourcePanel";
-import { useWorkbooks } from "@/lib/workbook-store";
+import { makeSyntheticWorkbook, useWorkbooks } from "@/lib/workbook-store";
 
 export const Route = createFileRoute("/sizing")({
   head: () => ({
@@ -30,7 +30,7 @@ const MODULE_ID = "sizing";
 const OUTPUT_FILENAME = "Field_Force_Sizing_v4.xlsx";
 
 function SizingPage() {
-  const { selectionByModule, getById } = useWorkbooks();
+  const { selectionByModule, getById, add } = useWorkbooks();
   const sourceId = selectionByModule[MODULE_ID];
   const source = sourceId ? getById(sourceId) : undefined;
 
@@ -52,6 +52,21 @@ function SizingPage() {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    add(
+      makeSyntheticWorkbook({
+        name: OUTPUT_FILENAME,
+        module: MODULE_ID,
+        sheets: [
+          { name: "Summary", rows: [["Drug / Brand", drug], ["Indication", indication], ["Geography", "United States"], ["Market Type", marketType]] },
+          { name: "Inputs", rows: [["Working Days / Year", workingDays], ["Calls Per Day", callsPerDay]] },
+          { name: "Normal_Workload", rows: [] },
+          { name: "Reach_Scenario", rows: [] },
+          { name: "Frequency_Scenario", rows: [] },
+          { name: "Segment_Scenario", rows: [] },
+          { name: "Sensitivity + tornado", rows: [] },
+        ],
+      })
+    );
     setIsRunning(false);
     setDone(true);
   };
