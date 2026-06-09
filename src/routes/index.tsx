@@ -7,6 +7,7 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { DataSourcePanel } from "@/components/DataSourcePanel";
 import { makeSyntheticWorkbook, useWorkbooks } from "@/lib/workbook-store";
+import { sendPrompt, triggerDownload } from "@/lib/send-prompt";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -65,20 +66,25 @@ function TargetingPage() {
       ts.map((t) => (t.tier === tier ? { ...t, [field]: Math.min(10, Math.max(1, v)) } : t))
     );
 
-  const handleExport = () => {
-    if (!valid || exporting) return;
+  const handleExport = async () => {
+    if (!valid || exporting || !source) return;
     setExporting(true);
-    setTimeout(() => {
-      const a = document.createElement("a");
-      a.href = "/Zoryve_HCP_Target_List_v5_Updated.xlsx";
-      a.download = "Zoryve_HCP_Target_List_v5_Updated.xlsx";
-      a.click();
+    try {
+      const result = await sendPrompt({
+        skill: "targeting-branded-skill",
+        prompt: `Score HCPs using weighted metrics. Objective: ${OBJECTIVE}`,
+        artifact: "HCP_Target_List.xlsx",
+        sheetData: source.sheets,
+        params: { metrics, tiers, objective: OBJECTIVE },
+      });
+      if (!result.ok) return;
+      triggerDownload(result.blob, result.filename);
       add(
         makeSyntheticWorkbook({
-          name: "Zoryve_HCP_Target_List_v5_Updated.xlsx",
+          name: result.filename,
           module: MODULE_ID,
           sheets: [
-            { name: "Summary", rows: [["Objective", OBJECTIVE], ["Source", source?.name ?? ""], ["Total HCPs", 14600]] },
+            { name: "Summary", rows: [["Objective", OBJECTIVE], ["Source", source.name]] },
             { name: "Raw data", rows: [] },
             { name: "Metric mapping", rows: [["Metric", "Role", "Weight %"], ...metrics.map((m) => [m.name, m.role, m.weight])] },
             { name: "Normalization helper", rows: [] },
@@ -88,8 +94,9 @@ function TargetingPage() {
           ],
         })
       );
+    } finally {
       setExporting(false);
-    }, 10000);
+    }
   };
 
   return (

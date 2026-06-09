@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DataSourcePanel } from "@/components/DataSourcePanel";
-import { sendPrompt } from "@/lib/send-prompt";
+import { sendPrompt, triggerDownload } from "@/lib/send-prompt";
 import { makeSyntheticWorkbook, useWorkbooks } from "@/lib/workbook-store";
 import { cn } from "@/lib/utils";
 
@@ -156,16 +156,20 @@ function AlignmentPage() {
       artifact: "US_Territory_Map.png",
     });
 
-  const handleWorkbook = () => {
-    if (!output) return;
-    sendPrompt({
+  const handleWorkbook = async () => {
+    if (!output || !source) return;
+    const result = await sendPrompt({
       skill: "zip-based-alignment",
-      prompt: `Export ZIP→territory alignment with workload validation from ${source?.name}.`,
-      artifact: "Territory_Alignment.xlsx (2 sheets)",
+      prompt: `ZIP→territory alignment from ${source.name}.`,
+      artifact: "Territory_Alignment.xlsx",
+      sheetData: source.sheets,
+      params: { numTerritories, minLoad, maxLoad, targetLoad },
     });
+    if (!result.ok) return;
+    triggerDownload(result.blob, result.filename);
     add(
       makeSyntheticWorkbook({
-        name: "Territory_Alignment.xlsx",
+        name: result.filename,
         module: MODULE_ID,
         sheets: [
           {
