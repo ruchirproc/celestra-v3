@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Target, Users, Map, Library, Menu, X } from "lucide-react";
+import { Target, Users, Map, Library, Menu, X, Workflow } from "lucide-react";
 import { useState, useId, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +33,7 @@ function CelestraLogo({ className }: { className?: string }) {
 }
 
 const nav = [
+  { to: "/pipeline", label: "Full Pipeline", icon: Workflow, skill: "full-pipeline-orchestration" },
   { to: "/", label: "Targeting", icon: Target, skill: "targeting-branded-skill" },
   { to: "/sizing", label: "Field Force Sizing", icon: Users, skill: "sizing-skill" },
   { to: "/alignment", label: "Territory Alignment", icon: Map, skill: "zip-based-alignment" },

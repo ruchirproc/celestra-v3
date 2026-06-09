@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SizingRouteImport } from './routes/sizing'
+import { Route as PipelineRouteImport } from './routes/pipeline'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as AlignmentRouteImport } from './routes/alignment'
 import { Route as IndexRouteImport } from './routes/index'
@@ -17,6 +18,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const SizingRoute = SizingRouteImport.update({
   id: '/sizing',
   path: '/sizing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PipelineRoute = PipelineRouteImport.update({
+  id: '/pipeline',
+  path: '/pipeline',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LibraryRoute = LibraryRouteImport.update({
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alignment': typeof AlignmentRoute
   '/library': typeof LibraryRoute
+  '/pipeline': typeof PipelineRoute
   '/sizing': typeof SizingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alignment': typeof AlignmentRoute
   '/library': typeof LibraryRoute
+  '/pipeline': typeof PipelineRoute
   '/sizing': typeof SizingRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,22 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/alignment': typeof AlignmentRoute
   '/library': typeof LibraryRoute
+  '/pipeline': typeof PipelineRoute
   '/sizing': typeof SizingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/alignment' | '/library' | '/sizing'
+  fullPaths: '/' | '/alignment' | '/library' | '/pipeline' | '/sizing'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/alignment' | '/library' | '/sizing'
-  id: '__root__' | '/' | '/alignment' | '/library' | '/sizing'
+  to: '/' | '/alignment' | '/library' | '/pipeline' | '/sizing'
+  id: '__root__' | '/' | '/alignment' | '/library' | '/pipeline' | '/sizing'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlignmentRoute: typeof AlignmentRoute
   LibraryRoute: typeof LibraryRoute
+  PipelineRoute: typeof PipelineRoute
   SizingRoute: typeof SizingRoute
 }
 
@@ -76,6 +86,13 @@ declare module '@tanstack/react-router' {
       path: '/sizing'
       fullPath: '/sizing'
       preLoaderRoute: typeof SizingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pipeline': {
+      id: '/pipeline'
+      path: '/pipeline'
+      fullPath: '/pipeline'
+      preLoaderRoute: typeof PipelineRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/library': {
@@ -106,6 +123,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlignmentRoute: AlignmentRoute,
   LibraryRoute: LibraryRoute,
+  PipelineRoute: PipelineRoute,
   SizingRoute: SizingRoute,
 }
 export const routeTree = rootRouteImport
